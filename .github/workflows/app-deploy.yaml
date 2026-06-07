@@ -56,39 +56,55 @@ jobs:
 
           sudo mv argocd /usr/local/bin/
 
-      - name: Update ArgoCD Application
+      - name: Update ArgoCD Image
         env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
           ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+          ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
+          ECR_REPOSITORY: frontend-app
         run: |
 
           IMAGE_TAG=${GITHUB_SHA::8}
 
-          IMAGE_URI="${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG}"
+          IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
 
-          argocd app set ${ECR_REPOSITORY} \
-            --server ${{ secrets.ARGOCD_SERVER }} \
-            --grpc-web \
-            --insecure \
-            --kustomize-image ${IMAGE_URI}
+          echo "Updating image to ${IMAGE_URI}"
 
-      - name: Sync Application
+          curl -k \
+            -X PATCH \
+            "http://${ARGOCD_SERVER}/api/v1/applications/frontend-app" \
+            -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"spec\": {
+                \"source\": {
+                  \"kustomize\": {
+                    \"images\": [
+                      \"${IMAGE_URI}\"
+                    ]
+                  }
+                }
+              }
+            }"
+
+      - name: Sync ArgoCD App
         env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
           ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
         run: |
 
-          argocd app sync ${ECR_REPOSITORY} \
-            --server ${{ secrets.ARGOCD_SERVER }} \
-            --grpc-web \
-            --insecure
+          curl -k \
+            -X POST \
+            "http://${ARGOCD_SERVER}/api/v1/applications/frontend-app/sync" \
+            -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}" \
+            -H "Content-Type: application/json"
 
-      - name: Wait For Healthy
+      - name: Get Application
         env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
           ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
         run: |
 
-          argocd app wait ${ECR_REPOSITORY} \
-            --server ${{ secrets.ARGOCD_SERVER }} \
-            --grpc-web \
-            --insecure \
-            --health \
-            --timeout 300
+          curl -k \
+            "http://${ARGOCD_SERVER}/api/v1/applications/frontend-app" \
+            -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}"
