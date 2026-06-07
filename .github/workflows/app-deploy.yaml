@@ -72,7 +72,7 @@ jobs:
 
           curl -k \
             -X PATCH \
-            "http://${ARGOCD_SERVER}/api/v1/applications/frontend-app" \
+            "http://${ARGOCD_SERVER}/api/v1/applications/frontend-app?patchType=application%2Fmerge-patch%2Bjson" \
             -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{
