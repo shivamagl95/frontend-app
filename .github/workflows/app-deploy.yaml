@@ -65,7 +65,7 @@ jobs:
 
           IMAGE_URI="${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG}"
 
-          argocd app set backend-app \
+          argocd app set ${ECR_REPOSITORY} \
             --server ${{ secrets.ARGOCD_SERVER }} \
             --grpc-web \
             --insecure \
@@ -76,7 +76,7 @@ jobs:
           ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
         run: |
 
-          argocd app sync backend-app \
+          argocd app sync ${ECR_REPOSITORY} \
             --server ${{ secrets.ARGOCD_SERVER }} \
             --grpc-web \
             --insecure
@@ -86,7 +86,7 @@ jobs:
           ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
         run: |
 
-          argocd app wait backend-app \
+          argocd app wait ${ECR_REPOSITORY} \
             --server ${{ secrets.ARGOCD_SERVER }} \
             --grpc-web \
             --insecure \
