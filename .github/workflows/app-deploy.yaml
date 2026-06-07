@@ -60,11 +60,11 @@ jobs:
         env:
           ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
           ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
-          ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: frontend-app
         run: |
 
-          IMAGE_TAG=${GITHUB_SHA::8}
+          IMAGE_TAG=${GITHUB_SHA}
 
           IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
 
@@ -72,19 +72,12 @@ jobs:
 
           curl -k \
             -X PATCH \
-            "http://${ARGOCD_SERVER}/api/v1/applications/frontend-app?patchType=application%2Fmerge-patch%2Bjson" \
+            "http://${ARGOCD_SERVER}/api/v1/applications/frontend-app" \
             -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{
-              \"spec\": {
-                \"source\": {
-                  \"kustomize\": {
-                    \"images\": [
-                      \"${IMAGE_URI}\"
-                    ]
-                  }
-                }
-              }
+              \"patch\": \"{\\\"spec\\\":{\\\"source\\\":{\\\"kustomize\\\":{\\\"images\\\":[\\\"${IMAGE_URI}\\\"]}}}}\",
+              \"patchType\": \"application/merge-patch+json\"
             }"
 
       - name: Sync ArgoCD App
