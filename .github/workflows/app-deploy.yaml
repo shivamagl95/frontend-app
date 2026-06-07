@@ -45,17 +45,6 @@ jobs:
         run: |
           docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Install ArgoCD CLI
-        run: |
-          VERSION=$(curl -s https://api.github.com/repos/argoproj/argo-cd/releases/latest | jq -r .tag_name)
-
-          curl -sSL -o argocd \
-            https://github.com/argoproj/argo-cd/releases/download/${VERSION}/argocd-linux-amd64
-
-          chmod +x argocd
-
-          sudo mv argocd /usr/local/bin/
-
       - name: Update ArgoCD Image
         env:
           ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
@@ -73,24 +62,12 @@ jobs:
           curl -X PATCH \
             -H "Authorization: Bearer $ARGOCD_AUTH_TOKEN" \
             -H "Content-Type: application/json" \
-            "http://$ARGOCD_SERVER/api/v1/applications/frontend-app" \
+            "http://$ARGOCD_SERVER/api/v1/applications/${ECR_REPOSITORY}" \
             -d '{
               "name": "frontend-app",
               "patch": "{\"spec\":{\"source\":{\"kustomize\":{\"images\":[\"'"${IMAGE_URI}"'\"]}}}}",
               "patchType": "merge"
             }'
-
-      - name: Sync ArgoCD App
-        env:
-          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
-          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
-        run: |
-
-          curl -k \
-            -X POST \
-            "http://${ARGOCD_SERVER}/api/v1/applications/frontend-app/sync" \
-            -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}" \
-            -H "Content-Type: application/json"
 
       - name: Get Application
         env:
@@ -99,5 +76,5 @@ jobs:
         run: |
 
           curl -k \
-            "http://${ARGOCD_SERVER}/api/v1/applications/frontend-app" \
+            "http://${ARGOCD_SERVER}/api/v1/applications/${ECR_REPOSITORY}" \
             -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}"
