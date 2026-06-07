@@ -70,15 +70,15 @@ jobs:
 
           echo "Updating image to ${IMAGE_URI}"
 
-          curl -k \
-            -X PATCH \
-            "http://${ARGOCD_SERVER}/api/v1/applications/frontend-app" \
-            -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}" \
+          curl -X PATCH \
+            -H "Authorization: Bearer $ARGOCD_AUTH_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"patch\": \"{\\\"spec\\\":{\\\"source\\\":{\\\"kustomize\\\":{\\\"images\\\":[\\\"${IMAGE_URI}\\\"]}}}}\",
-              \"patchType\": \"application/merge-patch+json\"
-            }"
+            "http://$ARGOCD_SERVER/api/v1/applications/frontend-app" \
+            -d '{
+              "name": "frontend-app",
+              "patch": "{\"spec\":{\"source\":{\"kustomize\":{\"images\":[\"'"${IMAGE_URI}"'\"]}}}}",
+              "patchType": "merge"
+            }'
 
       - name: Sync ArgoCD App
         env:
