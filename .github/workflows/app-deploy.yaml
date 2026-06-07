@@ -44,3 +44,51 @@ jobs:
       - name: Push image
         run: |
           docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Install ArgoCD CLI
+        run: |
+          VERSION=$(curl -s https://api.github.com/repos/argoproj/argo-cd/releases/latest | jq -r .tag_name)
+
+          curl -sSL -o argocd \
+            https://github.com/argoproj/argo-cd/releases/download/${VERSION}/argocd-linux-amd64
+
+          chmod +x argocd
+
+          sudo mv argocd /usr/local/bin/
+
+      - name: Update ArgoCD Application
+        env:
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+        run: |
+
+          IMAGE_TAG=${GITHUB_SHA::8}
+
+          IMAGE_URI="${{ steps.ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG}"
+
+          argocd app set backend-app \
+            --server ${{ secrets.ARGOCD_SERVER }} \
+            --grpc-web \
+            --insecure \
+            --kustomize-image ${IMAGE_URI}
+
+      - name: Sync Application
+        env:
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+        run: |
+
+          argocd app sync backend-app \
+            --server ${{ secrets.ARGOCD_SERVER }} \
+            --grpc-web \
+            --insecure
+
+      - name: Wait For Healthy
+        env:
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+        run: |
+
+          argocd app wait backend-app \
+            --server ${{ secrets.ARGOCD_SERVER }} \
+            --grpc-web \
+            --insecure \
+            --health \
+            --timeout 300
