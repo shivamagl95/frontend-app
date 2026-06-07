@@ -29,7 +29,7 @@ spec:
       serviceAccountName: frontend-app-sa
       containers:
         - name: frontend-app
-          image: 526741672110.dkr.ecr.us-east-1.amazonaws.com/frontend-app:57592aefafc0608fef6bb4f5e95857d2dcd9328a
+          image: 526741672110.dkr.ecr.us-east-1.amazonaws.com/frontend-app:2d23dd7181d7f94a12abc45d3a07c8856aa30ab8
           imagePullPolicy: Always
           env:
             - name: PORT
