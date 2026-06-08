@@ -44,10 +44,10 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=${{ github.repository }}
-            -Dsonar.projectName=${{ github.event.repository.name }}
+            -Dsonar.projectName=frontend-app
             -Dsonar.sources=.
             -Dsonar.tests=.
-            
+
       - name: Quality Gate Check
         uses: SonarSource/sonarqube-quality-gate-action@v1
         env:
