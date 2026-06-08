@@ -29,9 +29,11 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install dependencies
+        working-directory: ./web
         run: npm install
 
       - name: Run tests
+        working-directory: ./web
         run: npm test
 
       - name: Login to ECR
