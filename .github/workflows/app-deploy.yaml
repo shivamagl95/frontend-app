@@ -28,6 +28,12 @@ jobs:
           role-to-assume: ${{ secrets.iam_role_arn }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
       - name: Login to ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
