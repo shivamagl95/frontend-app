@@ -46,7 +46,7 @@ jobs:
             -Dsonar.projectKey=frontend-app
             -Dsonar.projectName=frontend-app
             -Dsonar.sources=.
-            -Dsonar.tests=.
+            -Dsonar.exclusions=infra/**
 
       - name: Quality Gate Check
         uses: SonarSource/sonarqube-quality-gate-action@v1
