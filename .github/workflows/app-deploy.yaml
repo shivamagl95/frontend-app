@@ -46,10 +46,8 @@ jobs:
             -Dsonar.projectKey=${{ github.repository }}
             -Dsonar.projectName=${{ github.event.repository.name }}
             -Dsonar.sources=.
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/coverage/**
-            -Dsonar.tests=**/__tests__/**,**/*.test.js,**/*.spec.js
-            -Dsonar.test.inclusions=**/__tests__/**,**/*.test.js,**/*.spec.js
-
+            -Dsonar.tests=.
+            
       - name: Quality Gate Check
         uses: SonarSource/sonarqube-quality-gate-action@v1
         env:
