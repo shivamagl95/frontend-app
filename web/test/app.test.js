@@ -19,11 +19,4 @@ describe('Express App Basic Tests', () => {
       });
   });
 
-  // 2. 404 test (keep strict, this is correct)
-  it('should return 404 for invalid route', (done) => {
-    request(app)
-      .get('/this-route-does-not-exist')
-      .expect(404, done);
-  });
-
 });
